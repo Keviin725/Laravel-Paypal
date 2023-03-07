@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Omnipay\Omnipay;
+
 
 class PaymentController extends Controller
 {
@@ -10,8 +12,8 @@ class PaymentController extends Controller
     public function __construct()
     {
         $this->gateway = Omnipay::create('PayPal_Rest');
-        $this->gateway->setClientId('PAYPAL_CLIENT_ID');
-        $this->gateway->setSecretId('PAYPAL_CLIENT_SECRET');
+        $this->gateway->setClientId(env('PAYPAL_CLIENT_ID'));
+        $this->gateway->setSecret(env('PAYPAL_CLIENT_SECRET'));
         $this->gateway->setTestMode(true);
     }
 
@@ -22,14 +24,14 @@ class PaymentController extends Controller
                 'currency' => env('PAYPAL_CURRENCY'),
                 'returnUrl' => url('success'),
                 'cancelUrl' => url('error')
-            ));
+            ))->send();
 
             if($response->isRedirect()){
                 $response->redirect();
             }else {
                 return $response->getMessage();
             }
-            
+
         } catch (\Throwable $th) {
             return $th->getMessage();
         }
